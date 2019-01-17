@@ -216,12 +216,8 @@ NOTEs:
 #include <string.h>
 #include "BlueNRG1_it.h"
 #include "BlueNRG1_conf.h"
-#include "ble_const.h"
-#include "bluenrg1_stack.h"
-#include "sleep.h"
 #include "SDK_EVAL_Config.h"
-#include "Beacon_config.h"
-#include "OTA_btl.h"
+
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -246,7 +242,7 @@ int main(void)
   SystemInit();
 
   /* Initialize the button */
-  SdkEvalPushButtonInit(USER_BUTTON);
+  SdkEvalPushButtonInit(BUTTON_1);
 
   while(1) 
   {

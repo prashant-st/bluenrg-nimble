@@ -86,6 +86,7 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_FULL_ASSERT=1 \
+-DBLUENRG2_DEVICE=1 \
 
 
 # AS includes
@@ -93,7 +94,12 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
+-ICMSIS/Include \
+-ICMSIS/Device/Include \
 -IProject/Include \
+-IBSP/Include \
+-IHAL/Include \
+-IDriver/Include \
 
 
 # compile gcc flags
@@ -114,7 +120,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32F072CBYx_FLASH.ld
+LDSCRIPT = BlueNRG2.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 
