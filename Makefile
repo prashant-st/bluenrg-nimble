@@ -13,7 +13,7 @@
 ######################################
 # target
 ######################################
-TARGET = bluenrg
+TARGET = BlueNRG
 
 
 ######################################
@@ -29,14 +29,21 @@ OPT = -Og
 # paths
 #######################################
 # Build path
-BUILD_DIR = build
+BUILD_DIR = _build
 
 ######################################
 # source
 ######################################
 # C sources
 C_SOURCES =  \
+CMSIS/Device/Source/system_BlueNRG1.c \
 Project/Source/main.c \
+Project/Source/BlueNRG1_it.c \
+BSP/Source/SDK_EVAL_Config.c \
+BSP/Source/SDK_EVAL_Button.c \
+HAL/Source/miscutil.c \
+Driver/Source/BlueNRG1_sysCtrl.c \
+Driver/Source/BlueNRG1_gpio.c \
 
 
 # ASM sources
@@ -87,6 +94,8 @@ AS_DEFS =
 C_DEFS =  \
 -DUSE_FULL_ASSERT=1 \
 -DBLUENRG2_DEVICE=1 \
+-DNO_SMART_POWER_MANAGEMENT \
+-DUSER_DEFINED_PLATFORM=STEVAL_IDB008V1 \
 
 
 # AS includes
@@ -164,7 +173,7 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	-rm -fR $(BUILD_DIR)
+	-rm -rf $(BUILD_DIR)
   
 #######################################
 # dependencies

@@ -24,9 +24,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "BlueNRG1_it.h"
 #include "BlueNRG1_conf.h"
-#include "ble_const.h"
-#include "bluenrg1_stack.h"
-#include "clock.h"
+
 
 /** @addtogroup BlueNRG1_StdPeriph_Examples
   * @{
@@ -88,7 +86,7 @@ void SVC_Handler(void)
   */
 void SysTick_Handler(void)
 {
-  SysCount_Handler(); 
+  
 }
 
 void GPIO_Handler(void)
@@ -111,8 +109,7 @@ void UART_Handler(void)
 
 void Blue_Handler(void)
 {
-   // Call RAL_Isr
-   RAL_Isr();
+  
 }
 
 /**
