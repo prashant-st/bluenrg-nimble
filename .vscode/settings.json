@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "bluenrg1_conf.h": "c",
+        "bluenrg1_it.h": "c",
+        "hal_types.h": "c"
+    }
+}
