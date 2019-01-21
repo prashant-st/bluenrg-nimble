@@ -32,7 +32,7 @@
 /*#include "BlueNRG1_i2c.h"*/
 /*#include "BlueNRG1_watchdog.h"*/
 /*#include "BlueNRG1_spi.h"*/
-#include "BlueNRG1_uart.h"
+/*#include "BlueNRG1_uart.h"*/
 /*#include "BlueNRG1_mft.h"*/
 /*#include "BlueNRG1_rtc.h"*/
 #include "BlueNRG1_dma.h"

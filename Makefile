@@ -41,7 +41,9 @@ Project/Source/main.c \
 Project/Source/BlueNRG1_it.c \
 BSP/Source/SDK_EVAL_Config.c \
 BSP/Source/SDK_EVAL_Button.c \
+BSP/Source/SDK_EVAL_Led.c \
 HAL/Source/miscutil.c \
+HAL/Source/clock.c \
 Driver/Source/BlueNRG1_sysCtrl.c \
 Driver/Source/BlueNRG1_gpio.c \
 

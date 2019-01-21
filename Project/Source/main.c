@@ -214,6 +214,8 @@ NOTEs:
 /* Includes ------------------------------------------------------------------*/
 #include <stdio.h>
 #include <string.h>
+
+#include "clock.h"
 #include "BlueNRG1_it.h"
 #include "BlueNRG1_conf.h"
 #include "SDK_EVAL_Config.h"
@@ -241,12 +243,22 @@ int main(void)
   /* System Init */
   SystemInit();
 
-  /* Initialize the button */
+  /* Clock Init */
+  Clock_Init();
+
+  /* Initialize the buttons */
   SdkEvalPushButtonInit(BUTTON_1);
+  SdkEvalPushButtonInit(BUTTON_2);
+
+  /* Initialize the LEDs */
+  SdkEvalLedInit(LED1);
+  SdkEvalLedInit(LED2);
+  SdkEvalLedInit(LED3);
 
   while(1) 
   {
-
+    Clock_Wait(500);
+    SdkEvalLedToggle(LED1);
   }
 }
 
