@@ -93,7 +93,7 @@
 #define BOR_ON                    2
 
 /*Device version to apply the BOR/BLD settings*/
-#define WA_DEVICE_VERSION 0x12
+#define WA_DEVICE_VERSION         0x12
    
 /**
  * @brief Word to unlock the flash operation
