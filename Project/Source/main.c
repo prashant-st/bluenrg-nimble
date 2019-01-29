@@ -243,6 +243,9 @@ int main(void)
   /* System Init */
   SystemInit();
 
+  /* Identify BlueNRG2 platform */
+  SdkEvalIdentification();
+
   /* Clock Init */
   Clock_Init();
 

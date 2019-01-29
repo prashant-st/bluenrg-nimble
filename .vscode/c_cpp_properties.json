@@ -14,7 +14,6 @@
                 "USE_FULL_ASSERT",
                 "BLUENRG2_DEVICE",
                 "NO_SMART_POWER_MANAGEMENT",
-                "USER_DEFINED_PLATFORM=STEVAL_IDB008V1",
                 "HS_SPEED_XTAL=HS_SPEED_XTAL_32MHZ"
             ],
             "compilerPath": "/usr/bin/clang",
