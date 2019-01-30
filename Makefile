@@ -46,6 +46,14 @@ HAL/Source/miscutil.c \
 HAL/Source/clock.c \
 Driver/Source/BlueNRG1_sysCtrl.c \
 Driver/Source/BlueNRG1_gpio.c \
+FreeRTOS/lib/FreeRTOS/event_groups.c \
+FreeRTOS/lib/FreeRTOS/list.c \
+FreeRTOS/lib/FreeRTOS/queue.c \
+FreeRTOS/lib/FreeRTOS/stream_buffer.c \
+FreeRTOS/lib/FreeRTOS/tasks.c \
+FreeRTOS/lib/FreeRTOS/timers.c \
+FreeRTOS/lib/FreeRTOS/portable/GCC/ARM_CM0/port.c \
+FreeRTOS/lib/FreeRTOS/portable/MemMang/heap_4.c \
 
 
 # ASM sources
@@ -111,6 +119,9 @@ C_INCLUDES =  \
 -IBSP/Include \
 -IHAL/Include \
 -IDriver/Include \
+-IFreeRTOS/lib/include \
+-IFreeRTOS/lib/include/private \
+-IFreeRTOS/lib/FreeRTOS/portable/GCC/ARM_CM0 \
 
 
 # compile gcc flags

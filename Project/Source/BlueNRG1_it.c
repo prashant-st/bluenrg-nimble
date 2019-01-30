@@ -69,13 +69,6 @@ void HardFault_Handler(void)
 }
 
 /**
-  * @brief  This function handles SVCall exception.
-  */
-void SVC_Handler(void)
-{
-}
-
-/**
   * @brief  This function handles PendSV_Handler exception.
   */
 //void PendSV_Handler(void)
