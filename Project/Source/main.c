@@ -212,6 +212,7 @@ NOTEs:
  */
 
 /* Includes ------------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <string.h>
 
@@ -220,16 +221,25 @@ NOTEs:
 #include "BlueNRG1_conf.h"
 #include "SDK_EVAL_Config.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+#include "timers.h"
+#include "semphr.h"
 
 /* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
 
+/**< Size of the BLE host task.*/
+#define APP_TASK_BLE_HS_SIZE            (configMINIMAL_STACK_SIZE * 6)
+/**< Priority of the BLE host task. */
+#define APP_TASK_BLE_HS_PRIORITY        (configMAX_PRIORITIES - 3)
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
 
+static void ble_host_thread(void * arg);
+
+/* Private define ------------------------------------------------------------*/
 
 
 /**
@@ -246,9 +256,6 @@ int main(void)
   /* Identify BlueNRG2 platform */
   SdkEvalIdentification();
 
-  /* Clock Init */
-  Clock_Init();
-
   /* Initialize the buttons */
   SdkEvalPushButtonInit(BUTTON_1);
   SdkEvalPushButtonInit(BUTTON_2);
@@ -258,10 +265,33 @@ int main(void)
   SdkEvalLedInit(LED2);
   SdkEvalLedInit(LED3);
 
-  while(1) 
+  BaseType_t err = xTaskCreate(ble_host_thread, "host", APP_TASK_BLE_HS_SIZE,
+                               NULL, APP_TASK_BLE_HS_PRIORITY, NULL);
+  assert_param(pdPASS == err);
+
+  /* Start scheduler */
+  vTaskStartScheduler();
+
+  /* We should never get here as control is now taken by the scheduler */
+  assert_param(0);
+}
+
+/* Private functions ---------------------------------------------------------*/
+
+/**@brief Thread for handling the Application's BLE Stack events.
+ *
+ * @details This thread is responsible for handling BLE Stack events sent from on_ble_evt().
+ *
+ * @param[in]   arg   Pointer used for passing some arbitrary information (context) from the
+ *                    osThreadCreate() call to the thread.
+ */
+static void ble_host_thread(void * arg)
+{
+  /* Infinite loop */
+  while (1)
   {
-    Clock_Wait(500);
     SdkEvalLedToggle(LED1);
+    vTaskDelay(500);
   }
 }
 
@@ -283,6 +313,8 @@ void assert_failed(uint8_t* file, uint32_t line)
   /* Infinite loop */
   while (1)
   {
+    SdkEvalLedToggle(LED3);
+    Clock_Wait(500);
   }
 }
 

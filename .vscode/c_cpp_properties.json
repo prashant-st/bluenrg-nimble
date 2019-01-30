@@ -8,7 +8,10 @@
                 "${workspaceFolder}/Project/Include",
                 "${workspaceFolder}/BSP/Include",
                 "${workspaceFolder}/HAL/Include",
-                "${workspaceFolder}/Driver/Include"
+                "${workspaceFolder}/Driver/Include",
+                "${workspaceFolder}/FreeRTOS/lib/include",
+                "${workspaceFolder}/FreeRTOS/lib/include/private",
+                "${workspaceFolder}/FreeRTOS/lib/FreeRTOS/portable/GCC/ARM_CM0"
             ],
             "defines": [
                 "USE_FULL_ASSERT",
