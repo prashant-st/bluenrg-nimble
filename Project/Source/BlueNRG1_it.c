@@ -22,10 +22,9 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+
 #include "BlueNRG1_it.h"
 #include "BlueNRG1_conf.h"
-#include "clock.h"
-
 
 /** @addtogroup BlueNRG1_StdPeriph_Examples
   * @{
@@ -66,21 +65,6 @@ void HardFault_Handler(void)
   /* Go to infinite loop when Hard Fault exception occurs */
   while (1)
   {}
-}
-
-/**
-  * @brief  This function handles PendSV_Handler exception.
-  */
-//void PendSV_Handler(void)
-//{
-//}
-
-/**
-  * @brief  This function handles SysTick Handler.
-  */
-void SysTick_Handler(void)
-{
-  SysCount_Handler();
 }
 
 void GPIO_Handler(void)

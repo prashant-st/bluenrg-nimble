@@ -216,7 +216,6 @@ NOTEs:
 #include <stdio.h>
 #include <string.h>
 
-#include "clock.h"
 #include "BlueNRG1_it.h"
 #include "BlueNRG1_conf.h"
 #include "SDK_EVAL_Config.h"
@@ -309,13 +308,8 @@ void assert_failed(uint8_t* file, uint32_t line)
 { 
   /* User can add his own implementation to report the file name and line number,
   ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  
-  /* Infinite loop */
-  while (1)
-  {
-    SdkEvalLedToggle(LED3);
-    Clock_Wait(500);
-  }
+
+  SdkEvalLedOn(LED3);
 }
 
 #endif

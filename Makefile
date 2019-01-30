@@ -43,7 +43,6 @@ BSP/Source/SDK_EVAL_Config.c \
 BSP/Source/SDK_EVAL_Button.c \
 BSP/Source/SDK_EVAL_Led.c \
 HAL/Source/miscutil.c \
-HAL/Source/clock.c \
 Driver/Source/BlueNRG1_sysCtrl.c \
 Driver/Source/BlueNRG1_gpio.c \
 FreeRTOS/lib/FreeRTOS/event_groups.c \
