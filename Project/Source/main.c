@@ -312,8 +312,8 @@ void assert_failed(uint8_t* file, uint32_t line)
   /* Infinite loop */
   while (1)
   {
-    SdkEvalLedToggle(LED3);
-    uint32_t delay = 100000;
+    SdkEvalLedToggle(LED2);
+    uint32_t delay = 500000;
     while (delay --)
     {
       __asm("nop");
