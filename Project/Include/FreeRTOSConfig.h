@@ -91,6 +91,7 @@
 /* Ensure stdint is only used by the compiler, and not the assembler. */
 #if defined(__ICCARM__) || defined(__CC_ARM) || defined(__GNUC__)
     #include <stdint.h>
+    void assert_failed(uint8_t* file, uint32_t line);
 #endif
 
 #define configUSE_PREEMPTION                     1
@@ -126,7 +127,7 @@ to exclude the API function. */
 /* Normal assert() semantics without relying on the provision of an assert.h
 header file. */
 /* USER CODE BEGIN 1 */
-#define configASSERT( x ) if ((x) == 0) {taskDISABLE_INTERRUPTS(); for( ;; );} 
+#define configASSERT( x )  (( x ) ? (void)0 : assert_failed((uint8_t *)__FILE__, __LINE__))
 /* USER CODE END 1 */
 
 /* Definitions that map the FreeRTOS port interrupt handlers to their CMSIS

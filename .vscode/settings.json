@@ -7,6 +7,7 @@
         "bluenrg1_sysctrl.h": "c",
         "bluenrg_x_device.h": "c",
         "bluenrg2.h": "c",
-        "system_bluenrg2.h": "c"
+        "system_bluenrg2.h": "c",
+        "bluenrg1_flash.h": "c"
     }
 }

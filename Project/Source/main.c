@@ -317,7 +317,7 @@ static void ble_host_thread(void * arg)
 */
 void assert_failed(uint8_t* file, uint32_t line)
 {
-  vTaskSuspendAll();
+  taskDISABLE_INTERRUPTS();
   console_printf("Wrong parameters value: file %s on line %d\n", file, line);
 
   SdkEvalLedOff(LED1);
