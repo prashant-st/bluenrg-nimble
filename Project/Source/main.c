@@ -264,6 +264,7 @@ int main(void)
   SdkEvalLedInit(LED2);
   SdkEvalLedInit(LED3);
 
+  /* NimBLE host task definition */
   BaseType_t err = xTaskCreate(ble_host_thread, "host", APP_TASK_BLE_HS_SIZE,
                                NULL, APP_TASK_BLE_HS_PRIORITY, NULL);
   assert_param(pdPASS == err);
@@ -305,10 +306,13 @@ static void ble_host_thread(void * arg)
 * @param  line: assert_param error line source number
 */
 void assert_failed(uint8_t* file, uint32_t line)
-{ 
+{
+  vTaskSuspendAll();
   /* User can add his own implementation to report the file name and line number,
   ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 
+  SdkEvalLedOff(LED1);
+  SdkEvalLedOff(LED3);
   /* Infinite loop */
   while (1)
   {

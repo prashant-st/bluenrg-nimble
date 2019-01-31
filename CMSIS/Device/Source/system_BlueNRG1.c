@@ -963,10 +963,10 @@ void SystemInit(void)
   NVIC_SetPriority(ADC_IRQn,       LOW_PRIORITY);
   NVIC_SetPriority(I2C2_IRQn,      LOW_PRIORITY);
   NVIC_SetPriority(I2C1_IRQn,      LOW_PRIORITY);
-  NVIC_SetPriority(MFT1A_IRQn,    LOW_PRIORITY);
-  NVIC_SetPriority(MFT1B_IRQn,    LOW_PRIORITY);
-  NVIC_SetPriority(MFT2A_IRQn,    LOW_PRIORITY);
-  NVIC_SetPriority(MFT2B_IRQn,    LOW_PRIORITY);
+  NVIC_SetPriority(MFT1A_IRQn,     LOW_PRIORITY);
+  NVIC_SetPriority(MFT1B_IRQn,     LOW_PRIORITY);
+  NVIC_SetPriority(MFT2A_IRQn,     LOW_PRIORITY);
+  NVIC_SetPriority(MFT2B_IRQn,     LOW_PRIORITY);
   NVIC_SetPriority(RTC_IRQn,       LOW_PRIORITY);
   NVIC_SetPriority(PKA_IRQn,       LOW_PRIORITY);
   NVIC_SetPriority(DMA_IRQn,       LOW_PRIORITY);

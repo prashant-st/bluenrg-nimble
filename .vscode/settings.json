@@ -2,6 +2,11 @@
     "files.associations": {
         "bluenrg1_conf.h": "c",
         "bluenrg1_it.h": "c",
-        "hal_types.h": "c"
+        "hal_types.h": "c",
+        "sdk_eval_config.h": "c",
+        "bluenrg1_sysctrl.h": "c",
+        "bluenrg_x_device.h": "c",
+        "bluenrg2.h": "c",
+        "system_bluenrg2.h": "c"
     }
 }
