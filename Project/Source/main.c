@@ -216,6 +216,10 @@ NOTEs:
 #include <stdio.h>
 #include <string.h>
 
+#include "console/console.h"
+
+#include "BlueNRG_x_device.h"
+#include "miscutil.h"
 #include "BlueNRG1_it.h"
 #include "BlueNRG1_conf.h"
 #include "SDK_EVAL_Config.h"
@@ -287,6 +291,12 @@ int main(void)
  */
 static void ble_host_thread(void * arg)
 {
+  uint8_t device_id, major_cut, minor_cut;
+
+  console_printf("\n");
+  BLEPLAT_get_part_info(&device_id, &major_cut, &minor_cut);
+  console_printf("BlueNRG-%d r%dp%d\n", device_id, major_cut, minor_cut);
+
   /* Infinite loop */
   while (1)
   {
@@ -308,8 +318,7 @@ static void ble_host_thread(void * arg)
 void assert_failed(uint8_t* file, uint32_t line)
 {
   vTaskSuspendAll();
-  /* User can add his own implementation to report the file name and line number,
-  ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  console_printf("Wrong parameters value: file %s on line %d\n", file, line);
 
   SdkEvalLedOff(LED1);
   SdkEvalLedOff(LED3);

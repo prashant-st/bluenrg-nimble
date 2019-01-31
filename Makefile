@@ -53,6 +53,8 @@ FreeRTOS/lib/FreeRTOS/tasks.c \
 FreeRTOS/lib/FreeRTOS/timers.c \
 FreeRTOS/lib/FreeRTOS/portable/GCC/ARM_CM0/port.c \
 FreeRTOS/lib/FreeRTOS/portable/MemMang/heap_4.c \
+FreeRTOS/lib/third_party/tracealyzer_recorder/streamports/Jlink_RTT/SEGGER_RTT_Printf.c \
+FreeRTOS/lib/third_party/tracealyzer_recorder/streamports/Jlink_RTT/SEGGER_RTT.c \
 
 
 # ASM sources
@@ -121,6 +123,7 @@ C_INCLUDES =  \
 -IFreeRTOS/lib/include \
 -IFreeRTOS/lib/include/private \
 -IFreeRTOS/lib/FreeRTOS/portable/GCC/ARM_CM0 \
+-IFreeRTOS/lib/third_party/tracealyzer_recorder/streamports/Jlink_RTT/include \
 
 
 # compile gcc flags

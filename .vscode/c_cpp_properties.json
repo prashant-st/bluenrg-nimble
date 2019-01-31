@@ -11,7 +11,8 @@
                 "${workspaceFolder}/Driver/Include",
                 "${workspaceFolder}/FreeRTOS/lib/include",
                 "${workspaceFolder}/FreeRTOS/lib/include/private",
-                "${workspaceFolder}/FreeRTOS/lib/FreeRTOS/portable/GCC/ARM_CM0"
+                "${workspaceFolder}/FreeRTOS/lib/FreeRTOS/portable/GCC/ARM_CM0",
+                "${workspaceFolder}/FreeRTOS/lib/third_party/tracealyzer_recorder/streamports/Jlink_RTT/include"
             ],
             "defines": [
                 "USE_FULL_ASSERT",
