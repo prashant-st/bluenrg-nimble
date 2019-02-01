@@ -584,17 +584,17 @@ REQUIRED(__blue_RAM_struct __blue_RAM) = {0,};
 /**
  * @brief Central frequency 
  */
-#define CENTRAL_FREQ_MOD             0x08
+#define CENTRAL_FREQ_MOD            0x08
 //@} \\Device Configuration values
 
 /**
  *@brief Number of configuration bytes to send over Blue SPI
  */
-#define NUMBER_CONFIG_BYTE  0x02
+#define NUMBER_CONFIG_BYTE          0x02
 /**
  *@brief End Configuration Tag
  */
-#define END_CONFIG          0x00
+#define END_CONFIG                  0x00
 
 /**
  * @brief Cold start configuration register table
@@ -910,10 +910,10 @@ void DeviceConfiguration(BOOL coldStart, BOOL waitLS_Ready)
   }
   
   /* Wait until HS is ready. The slow clock period 
-  * measurement is done automatically each time the
-  * device enters in active2 state and the HS is ready.
-  * The interrupt signals that a measurement is done.
-  */
+   * measurement is done automatically each time the
+   * device enters in active2 state and the HS is ready.
+   * The interrupt signals that a measurement is done.
+   */
   while(CKGEN_BLE->CLK32K_IT == 0);
   CKGEN_BLE->CLK32K_IT = 1;
   CKGEN_BLE->CLK32K_COUNT = 23; //Restore the window length for slow clock measurement.
@@ -949,9 +949,9 @@ void SystemInit(void)
   FLASH->CONFIG = FLASH_PREMAP_MAIN;
 
   /* Configure all the interrupts priority. 
-  * The application can modify the interrupts priority.
-  * The  PendSV_IRQn and BLUE_CTRL_IRQn SHALL maintain the highest priority
-  */
+   * The application can modify the interrupts priority.
+   * The  PendSV_IRQn and BLUE_CTRL_IRQn SHALL maintain the highest priority
+   */
   NVIC_SetPriority(PendSV_IRQn,    LOW_PRIORITY);
   NVIC_SetPriority(SysTick_IRQn,   LOW_PRIORITY);
   NVIC_SetPriority(GPIO_IRQn,      LOW_PRIORITY);
