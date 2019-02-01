@@ -1,3 +1,6 @@
 [submodule "FreeRTOS"]
 	path = FreeRTOS
 	url = git@github.com:aws/amazon-freertos.git
+[submodule "NimBLE"]
+	path = NimBLE
+	url = git@github.com:apache/mynewt-nimble.git
