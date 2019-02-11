@@ -31,6 +31,13 @@ OPT = -Og
 # Build path
 BUILD_DIR = _build
 
+# Configure NimBLE variables
+NIMBLE_ROOT := NimBLE
+NIMBLE_CFG_TINYCRYPT := 1
+include $(NIMBLE_ROOT)/porting/nimble/Makefile.defs
+include Makefile.controller
+
+
 ######################################
 # source
 ######################################
@@ -55,6 +62,8 @@ FreeRTOS/lib/FreeRTOS/portable/GCC/ARM_CM0/port.c \
 FreeRTOS/lib/FreeRTOS/portable/MemMang/heap_4.c \
 FreeRTOS/lib/third_party/tracealyzer_recorder/streamports/Jlink_RTT/SEGGER_RTT_Printf.c \
 FreeRTOS/lib/third_party/tracealyzer_recorder/streamports/Jlink_RTT/SEGGER_RTT.c \
+$(NIMBLE_SRC) \
+$(TINYCRYPT_SRC) \
 
 
 # ASM sources
@@ -124,12 +133,15 @@ C_INCLUDES =  \
 -IFreeRTOS/lib/include/private \
 -IFreeRTOS/lib/FreeRTOS/portable/GCC/ARM_CM0 \
 -IFreeRTOS/lib/third_party/tracealyzer_recorder/streamports/Jlink_RTT/include \
+-INimBLE/porting/npl/freertos/include \
+$(addprefix -I, $(NIMBLE_INCLUDE)) \
+$(addprefix -I, $(TINYCRYPT_INCLUDE)) \
 
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections $(NIMBLE_CFLAGS) $(TINYCRYPT_CFLAGS)
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
