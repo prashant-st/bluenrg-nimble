@@ -12,13 +12,23 @@
                 "${workspaceFolder}/FreeRTOS/lib/include",
                 "${workspaceFolder}/FreeRTOS/lib/include/private",
                 "${workspaceFolder}/FreeRTOS/lib/FreeRTOS/portable/GCC/ARM_CM0",
-                "${workspaceFolder}/FreeRTOS/lib/third_party/tracealyzer_recorder/streamports/Jlink_RTT/include"
+                "${workspaceFolder}/FreeRTOS/lib/third_party/tracealyzer_recorder/streamports/Jlink_RTT/include",
+                "${workspaceFolder}/NimBLE/nimble/include",
+                "${workspaceFolder}/NimBLE/nimble/host/include",
+                "${workspaceFolder}/NimBLE/nimble/host/store/ram/include",
+                "${workspaceFolder}/NimBLE/nimble/host/util/include",
+                "${workspaceFolder}/NimBLE/porting/nimble/include",
+                "${workspaceFolder}/NimBLE/porting/npl/freertos/include",
+                "${workspaceFolder}/NimBLE/nimble/transport/ram/include",
+                "${workspaceFolder}/NimBLE/nimble/controller/include",
+                "${workspaceFolder}/NimBLE/ext/tinycrypt/include"
             ],
             "defines": [
                 "USE_FULL_ASSERT",
                 "BLUENRG2_DEVICE",
                 "NO_SMART_POWER_MANAGEMENT",
-                "HS_SPEED_XTAL=HS_SPEED_XTAL_32MHZ"
+                "HS_SPEED_XTAL=HS_SPEED_XTAL_32MHZ",
+                "NIMBLE_CFG_CONTROLLER=1"
             ],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
