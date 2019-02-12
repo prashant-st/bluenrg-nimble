@@ -192,8 +192,8 @@ SECTIONS
   {
     KEEP(*(.__crash_RAM))
   }  >REGION_RAM
+
   /* Uninitialized data section */
-   
   .bss.blueRAM 0x200000C0 :
   {
     . = ALIGN(4);
@@ -239,10 +239,10 @@ SECTIONS
   } >REGION_RAM
 
 /**
-* Last two sectors of FLASH are reserved for BLE Stack. The BLE Host
-* stores its security database and other non-volatile information in this area.
-* The linker needs to make sure this area is left empty.
-*/
+ * Last two sectors of FLASH are reserved for BLE Stack. The BLE Host
+ * stores its security database and other non-volatile information in this area.
+ * The linker needs to make sure this area is left empty.
+ */
   BLOCK_STACKLIB_FLASH_DATA (_MEMORY_FLASH_END_ - FLASH_NVM_DATASIZE + 1) (NOLOAD) :
   {
     . = ALIGN(2048);
@@ -252,7 +252,14 @@ SECTIONS
     
   } >REGION_NVM
 
-
+  ._user_heap (NOLOAD) :
+  {
+    . = ALIGN(4);
+    PROVIDE ( end = . );
+    PROVIDE ( _end = . );
+    . = . + _Min_Heap_Size;
+    . = ALIGN(4);
+  } > REGION_RAM
 
   /* This is to emulate place at end of IAR linker */
   CSTACK (ORIGIN(REGION_RAM) + LENGTH(REGION_RAM) - _Min_Stack_Size) (NOLOAD) :

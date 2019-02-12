@@ -229,12 +229,19 @@ NOTEs:
 #include "timers.h"
 #include "semphr.h"
 
+#include "nimble/nimble_port.h"
+
 /* Private typedef -----------------------------------------------------------*/
 
 /**< Size of the BLE host task.*/
 #define APP_TASK_BLE_HS_SIZE            (configMINIMAL_STACK_SIZE * 6)
 /**< Priority of the BLE host task. */
-#define APP_TASK_BLE_HS_PRIORITY        (configMAX_PRIORITIES - 3)
+#define APP_TASK_BLE_HS_PRIORITY        (configMAX_PRIORITIES - 2)
+
+/**< Size of the BLE host task.*/
+#define APP_TASK_BLE_CTRL_SIZE          (configMINIMAL_STACK_SIZE * 6)
+/**< Priority of the BLE host task. */
+#define APP_TASK_BLE_CTRL_PRIORITY      (configMAX_PRIORITIES - 1)
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -292,17 +299,22 @@ int main(void)
 static void ble_host_thread(void * arg)
 {
   uint8_t device_id, major_cut, minor_cut;
+  BaseType_t err;
 
   console_printf("\n");
   BLEPLAT_get_part_info(&device_id, &major_cut, &minor_cut);
   console_printf("BlueNRG-%d r%dp%d\n", device_id, major_cut, minor_cut);
 
-  /* Infinite loop */
-  while (1)
-  {
-    SdkEvalLedToggle(LED1);
-    vTaskDelay(500);
-  }
+  /* Initialize NimBLE host */
+  nimble_port_init();
+
+  err = xTaskCreate(nimble_port_ll_task_func, "controller",
+                    APP_TASK_BLE_CTRL_SIZE, NULL,
+                    APP_TASK_BLE_CTRL_PRIORITY, NULL);
+  assert_param(pdPASS == err);
+
+  /* Handle NimBLE events */
+  nimble_port_run();
 }
 
 /***************************************************************************************/

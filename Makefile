@@ -46,6 +46,9 @@ C_SOURCES =  \
 CMSIS/Device/Source/system_BlueNRG1.c \
 Project/Source/main.c \
 Project/Source/BlueNRG1_it.c \
+Project/Source/ble_hw.c \
+Project/Source/ble_phy.c \
+Project/Source/hal_timers.c \
 BSP/Source/SDK_EVAL_Config.c \
 BSP/Source/SDK_EVAL_Button.c \
 BSP/Source/SDK_EVAL_Led.c \
@@ -62,13 +65,14 @@ FreeRTOS/lib/FreeRTOS/portable/GCC/ARM_CM0/port.c \
 FreeRTOS/lib/FreeRTOS/portable/MemMang/heap_4.c \
 FreeRTOS/lib/third_party/tracealyzer_recorder/streamports/Jlink_RTT/SEGGER_RTT_Printf.c \
 FreeRTOS/lib/third_party/tracealyzer_recorder/streamports/Jlink_RTT/SEGGER_RTT.c \
+NimBLE/porting/npl/freertos/src/nimble_port_freertos.c \
+NimBLE/porting/npl/freertos/src/npl_os_freertos.c \
 $(NIMBLE_SRC) \
 $(TINYCRYPT_SRC) \
 
 
 # ASM sources
 ASM_SOURCES =  \
-
 
 
 #######################################

@@ -8,6 +8,8 @@
         "bluenrg_x_device.h": "c",
         "bluenrg2.h": "c",
         "system_bluenrg2.h": "c",
-        "bluenrg1_flash.h": "c"
+        "bluenrg1_flash.h": "c",
+        "nimble_npl.h": "c",
+        "nimble_npl_os.h": "c"
     }
 }
