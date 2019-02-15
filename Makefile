@@ -55,6 +55,8 @@ BSP/Source/SDK_EVAL_Led.c \
 HAL/Source/miscutil.c \
 Driver/Source/BlueNRG1_sysCtrl.c \
 Driver/Source/BlueNRG1_gpio.c \
+Driver/Source/BlueNRG1_rtc.c \
+Driver/Source/BlueNRG1_wdg.c \
 FreeRTOS/lib/FreeRTOS/event_groups.c \
 FreeRTOS/lib/FreeRTOS/list.c \
 FreeRTOS/lib/FreeRTOS/queue.c \

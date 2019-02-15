@@ -67,9 +67,11 @@ void HardFault_Handler(void)
   {}
 }
 
-void GPIO_Handler(void)
+void WDG_Handler(void)
 {
+  WDG_ClearITPendingBit();
 }
+
 /******************************************************************************/
 /*                 BlueNRG-1 Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */

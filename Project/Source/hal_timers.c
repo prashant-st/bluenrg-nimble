@@ -23,66 +23,9 @@
 #include <errno.h>
 #include "hal/hal_timer.h"
 
-#define __HAL_DISABLE_INTERRUPTS(x)                     \
-    do {                                                \
-        x = __get_PRIMASK();                            \
-        __disable_irq();                                \
-    } while(0);
-
-#define __HAL_ENABLE_INTERRUPTS(x)                      \
-    do {                                                \
-        if (!x) {                                       \
-            __enable_irq();                             \
-        }                                               \
-    } while(0);
-
-/* IRQ prototype */
-typedef void (*hal_timer_irq_handler_t)(void);
-
-/* User CC 2 for reading counter, CC 3 for timer isr */
-#define NRF_TIMER_CC_READ       (2)
-#define NRF_TIMER_CC_INT        (3)
-
-/* Output compare 2 used for RTC timers */
-#define NRF_RTC_TIMER_CC_INT    (2)
-
-/* Maximum number of hal timers used */
-#define NRF52_HAL_TIMER_MAX     (6)
-
-/* Maximum timer frequency */
-#define NRF52_MAX_TIMER_FREQ    (16000000)
-
-struct nrf52_hal_timer {
-    uint8_t tmr_enabled;
-    uint8_t tmr_irq_num;
-    uint8_t tmr_rtc;
-    uint8_t tmr_pad;
-    uint32_t tmr_cntr;
-    uint32_t timer_isrs;
-    uint32_t tmr_freq;
-    void *tmr_reg;
-    
-};
-
-
-
-
-
-/* Resolve timer number into timer structure */
-#define NRF52_HAL_TIMER_RESOLVE(__n, __v)       \
-    if ((__n) >= NRF52_HAL_TIMER_MAX) {         \
-        rc = EINVAL;                            \
-        goto err;                               \
-    }                                           \
-    (__v) = (struct nrf52_hal_timer *) nrf52_hal_timers[(__n)];            \
-    if ((__v) == NULL) {                        \
-        rc = EINVAL;                            \
-        goto err;                               \
-    }
-
-/* Interrupt mask for interrupt enable/clear */
-#define NRF_TIMER_INT_MASK(x)    ((1 << (uint32_t)(x)) << 16)
-
+#include "BlueNRG_x_device.h"
+#include "BlueNRG1_conf.h"
+#include "SDK_EVAL_Config.h"
 
 /**
  * hal timer init
@@ -97,6 +40,15 @@ struct nrf52_hal_timer {
 int
 hal_timer_init(int timer_num, void *cfg)
 {
+    /* Enable watchdog clocks  */
+    SysCtrl_PeripheralClockCmd(CLOCK_PERIPH_WDG, ENABLE);
+
+    /* Set watchdog reload period */
+    WDG_SetReload(~0);
+
+    /* Watchdog enable */
+    WDG_Enable();
+
     return 0;
 }
 
@@ -113,6 +65,15 @@ hal_timer_init(int timer_num, void *cfg)
 int
 hal_timer_config(int timer_num, uint32_t freq_hz)
 {
+    RTC_InitType RTC_Init_struct;
+
+    SysCtrl_PeripheralClockCmd(CLOCK_PERIPH_RTC, ENABLE);
+
+    /** RTC configuration */
+    RTC_StructInit(&RTC_Init_struct);
+    RTC_Init_struct.RTC_TLR1 = ~0;
+    RTC_Init(&RTC_Init_struct);
+
     return 0;
 }
 
@@ -128,6 +89,9 @@ hal_timer_config(int timer_num, uint32_t freq_hz)
 int
 hal_timer_deinit(int timer_num)
 {
+    SysCtrl_PeripheralClockCmd(CLOCK_PERIPH_WDG, DISABLE);
+    SysCtrl_PeripheralClockCmd(CLOCK_PERIPH_RTC, DISABLE);
+
     return 0;
 }
 
@@ -143,7 +107,7 @@ hal_timer_deinit(int timer_num)
 uint32_t
 hal_timer_get_resolution(int timer_num)
 {
-    return 0;
+    return (1000000000UL / 32768UL);
 }
 
 /**
@@ -158,7 +122,9 @@ hal_timer_get_resolution(int timer_num)
 uint32_t
 hal_timer_read(int timer_num)
 {
-    return 0;
+    uint32_t tcntr = ~0;
+
+    return tcntr - WDG_GetCounter();
 }
 
 /**
@@ -174,6 +140,13 @@ hal_timer_read(int timer_num)
 int
 hal_timer_delay(int timer_num, uint32_t ticks)
 {
+    uint32_t until;
+
+    until = hal_timer_read(timer_num) + ticks;
+    while ((int32_t)(hal_timer_read(timer_num) - until) <= 0) {
+        /* Loop here till finished */
+    }
+
     return 0;
 }
 
@@ -190,18 +163,28 @@ int
 hal_timer_set_cb(int timer_num, struct hal_timer *timer, hal_timer_cb cb_func,
                  void *arg)
 {
+    timer->cb_func = cb_func;
+    timer->cb_arg = arg;
+    timer->link.tqe_prev = NULL;
+    timer->bsp_timer = (void *)timer_num;
+
     return 0;
 }
 
 int
 hal_timer_start(struct hal_timer *timer, uint32_t ticks)
 {
-    return 0;
+    return hal_timer_start_at(timer, hal_timer_read((int)timer->bsp_timer) + ticks);
 }
 
 int
 hal_timer_start_at(struct hal_timer *timer, uint32_t tick)
 {
+    if ((timer == NULL) || (timer->link.tqe_prev != NULL) ||
+        (timer->cb_func == NULL)) {
+        return EINVAL;
+    }
+
     return 0;
 }
 
@@ -219,3 +202,4 @@ hal_timer_stop(struct hal_timer *timer)
 {
     return 0;
 }
+
