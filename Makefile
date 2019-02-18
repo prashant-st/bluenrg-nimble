@@ -70,12 +70,11 @@ FreeRTOS/lib/third_party/tracealyzer_recorder/streamports/Jlink_RTT/SEGGER_RTT.c
 NimBLE/porting/npl/freertos/src/nimble_port_freertos.c \
 NimBLE/porting/npl/freertos/src/npl_os_freertos.c \
 $(NIMBLE_SRC) \
-$(TINYCRYPT_SRC) \
+$(TINYCRYPT_SRC)
 
 
 # ASM sources
-ASM_SOURCES =  \
-
+ASM_SOURCES = 
 
 #######################################
 # binaries
@@ -118,10 +117,10 @@ AS_DEFS =
 
 # C defines
 C_DEFS =  \
--DUSE_FULL_ASSERT \
--DBLUENRG2_DEVICE \
--DNO_SMART_POWER_MANAGEMENT \
--DHS_SPEED_XTAL=HS_SPEED_XTAL_32MHZ \
+-D USE_FULL_ASSERT \
+-D BLUENRG2_DEVICE \
+-D NO_SMART_POWER_MANAGEMENT \
+-D HS_SPEED_XTAL=HS_SPEED_XTAL_32MHZ
 
 
 # AS includes
@@ -141,7 +140,7 @@ C_INCLUDES =  \
 -IFreeRTOS/lib/third_party/tracealyzer_recorder/streamports/Jlink_RTT/include \
 -INimBLE/porting/npl/freertos/include \
 $(addprefix -I, $(NIMBLE_INCLUDE)) \
-$(addprefix -I, $(TINYCRYPT_INCLUDE)) \
+$(addprefix -I, $(TINYCRYPT_INCLUDE))
 
 
 # compile gcc flags

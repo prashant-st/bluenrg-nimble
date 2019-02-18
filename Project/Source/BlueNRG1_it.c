@@ -67,11 +67,6 @@ void HardFault_Handler(void)
   {}
 }
 
-void WDG_Handler(void)
-{
-  WDG_ClearITPendingBit();
-}
-
 /******************************************************************************/
 /*                 BlueNRG-1 Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
@@ -83,8 +78,17 @@ void WDG_Handler(void)
 * @param  None
 * @retval None
 */
-void UART_Handler(void)
-{  
+void WDG_Handler(void)
+{
+  WDG_ClearITPendingBit();
+}
+    
+void RTC_Handler(void)
+{
+  void bluenrg_timer_handler(void);
+
+  RTC_IT_Clear(RTC_IT_TIMER);
+  bluenrg_timer_handler();
 }
 
 void Blue_Handler(void)

@@ -27,6 +27,98 @@
 #include "BlueNRG1_conf.h"
 #include "SDK_EVAL_Config.h"
 
+#define __HAL_DISABLE_INTERRUPTS(x)                     \
+    do {                                                \
+        x = __get_PRIMASK();                            \
+        __disable_irq();                                \
+    } while(0);
+
+#define __HAL_ENABLE_INTERRUPTS(x)                      \
+    do {                                                \
+        if (!x) {                                       \
+            __enable_irq();                             \
+        }                                               \
+    } while(0);
+
+TAILQ_HEAD(hal_timer_qhead, hal_timer);
+
+static struct hal_timer_qhead hal_timer_q = TAILQ_HEAD_INITIALIZER(hal_timer_q);
+
+inline uint32_t
+bluenrg_timer_read(void)
+{
+    uint32_t tcntr = ~0;
+
+    return tcntr - WDG_GetCounter();
+}
+
+/**
+ * nrf timer set ocmp
+ *
+ * Set the OCMP used by the timer to the desired expiration tick
+ *
+ * NOTE: Must be called with interrupts disabled.
+ *
+ * @param timer Pointer to timer.
+ */
+static void
+bluenrg_timer_set(uint32_t expiry)
+{
+    RTC_InitType RTC_Init_struct;
+    int32_t delta;
+
+    RTC_Cmd(DISABLE);
+    /* In case the delta timestamp is less 1 */
+    delta = (int32_t)(expiry - bluenrg_timer_read() - 1);
+    if (delta > 0) {
+        /** RTC configuration */
+        RTC_StructInit(&RTC_Init_struct);
+        RTC_Init_struct.RTC_operatingMode = RTC_TIMER_ONESHOT;
+        RTC_Init_struct.RTC_TLR1 = delta;
+        RTC_Init(&RTC_Init_struct);
+    } else {
+        NVIC_SetPendingIRQ(RTC_IRQn);
+    }
+}
+
+/* Disable output compare used for timer */
+inline void
+bluenrg_timer_disable(void)
+{
+    RTC_Cmd(DISABLE);
+}
+
+void
+bluenrg_timer_handler(void)
+{
+    uint32_t ctx;
+    struct hal_timer *timer;
+
+    /* disable interrupts */
+    __HAL_DISABLE_INTERRUPTS(ctx);
+
+    while ((timer = TAILQ_FIRST(&hal_timer_q)) != NULL) {
+        /* In case the current stamp is less 1 */
+        if ((int32_t)(bluenrg_timer_read() + 1 - timer->expiry) >= 0) {
+            TAILQ_REMOVE(&hal_timer_q, timer, link);
+            timer->link.tqe_prev = NULL;
+            timer->cb_func(timer->cb_arg);
+        } else {
+            break;
+        }
+    }
+
+    /* Any timers left on queue? If so, we need to set OCMP */
+    timer = TAILQ_FIRST(&hal_timer_q);
+    if (timer) {
+        bluenrg_timer_set(timer->expiry);
+    } else {
+        bluenrg_timer_disable();
+    }
+
+    __HAL_ENABLE_INTERRUPTS(ctx);
+}
+
 /**
  * hal timer init
  *
@@ -65,14 +157,9 @@ hal_timer_init(int timer_num, void *cfg)
 int
 hal_timer_config(int timer_num, uint32_t freq_hz)
 {
-    RTC_InitType RTC_Init_struct;
-
     SysCtrl_PeripheralClockCmd(CLOCK_PERIPH_RTC, ENABLE);
-
-    /** RTC configuration */
-    RTC_StructInit(&RTC_Init_struct);
-    RTC_Init_struct.RTC_TLR1 = ~0;
-    RTC_Init(&RTC_Init_struct);
+    RTC_IT_Config(RTC_IT_TIMER, ENABLE);
+    RTC_AutoStart(ENABLE);
 
     return 0;
 }
@@ -122,9 +209,7 @@ hal_timer_get_resolution(int timer_num)
 uint32_t
 hal_timer_read(int timer_num)
 {
-    uint32_t tcntr = ~0;
-
-    return tcntr - WDG_GetCounter();
+    return bluenrg_timer_read();
 }
 
 /**
@@ -166,7 +251,7 @@ hal_timer_set_cb(int timer_num, struct hal_timer *timer, hal_timer_cb cb_func,
     timer->cb_func = cb_func;
     timer->cb_arg = arg;
     timer->link.tqe_prev = NULL;
-    timer->bsp_timer = (void *)timer_num;
+    timer->bsp_timer = NULL;
 
     return 0;
 }
@@ -174,16 +259,45 @@ hal_timer_set_cb(int timer_num, struct hal_timer *timer, hal_timer_cb cb_func,
 int
 hal_timer_start(struct hal_timer *timer, uint32_t ticks)
 {
-    return hal_timer_start_at(timer, hal_timer_read((int)timer->bsp_timer) + ticks);
+    return hal_timer_start_at(timer, bluenrg_timer_read() + ticks);
 }
 
 int
 hal_timer_start_at(struct hal_timer *timer, uint32_t tick)
 {
+    uint32_t ctx;
+    struct hal_timer *entry;
+
     if ((timer == NULL) || (timer->link.tqe_prev != NULL) ||
         (timer->cb_func == NULL)) {
+
         return EINVAL;
     }
+
+    timer->expiry = tick;
+
+    __HAL_DISABLE_INTERRUPTS(ctx);
+
+    if (TAILQ_EMPTY(&hal_timer_q)) {
+        TAILQ_INSERT_HEAD(&hal_timer_q, timer, link);
+    } else {
+        TAILQ_FOREACH(entry, &hal_timer_q, link) {
+            if ((int32_t)(timer->expiry - entry->expiry) < 0) {
+                TAILQ_INSERT_BEFORE(entry, timer, link);
+                break;
+            }
+        }
+        if (!entry) {
+            TAILQ_INSERT_TAIL(&hal_timer_q, timer, link);
+        }
+    }
+
+    /* If this is the head, we need to set new OCMP */
+    if (timer == TAILQ_FIRST(&hal_timer_q)) {
+        bluenrg_timer_set(timer->expiry);
+    }
+
+    __HAL_ENABLE_INTERRUPTS(ctx);
 
     return 0;
 }
@@ -200,6 +314,36 @@ hal_timer_start_at(struct hal_timer *timer, uint32_t tick)
 int
 hal_timer_stop(struct hal_timer *timer)
 {
+    uint32_t ctx;
+    int reset_ocmp;
+    struct hal_timer *entry;
+
+    if (timer == NULL) {
+        return EINVAL;
+    }
+
+    __HAL_DISABLE_INTERRUPTS(ctx);
+    
+    if (timer->link.tqe_prev != NULL) {
+        reset_ocmp = 0;
+        if (timer == TAILQ_FIRST(&hal_timer_q)) {
+            /* If first on queue, we will need to reset OCMP */
+            entry = TAILQ_NEXT(timer, link);
+            reset_ocmp = 1;
+        }
+        TAILQ_REMOVE(&hal_timer_q, timer, link);
+        timer->link.tqe_prev = NULL;
+        if (reset_ocmp) {
+            if (entry) {
+                bluenrg_timer_set(entry->expiry);
+            } else {
+                bluenrg_timer_disable();
+            }
+        }
+    }
+
+    __HAL_ENABLE_INTERRUPTS(ctx);
+
     return 0;
 }
 
