@@ -21,6 +21,8 @@
 #include <stdint.h>
 #include <assert.h>
 #include <errno.h>
+#include <stdbool.h>
+
 #include "hal/hal_timer.h"
 
 #include "BlueNRG_x_device.h"
@@ -62,12 +64,19 @@ bluenrg_timer_read(void)
  * @param timer Pointer to timer.
  */
 static void
-bluenrg_timer_set(uint32_t expiry)
+bluenrg_timer_set(uint32_t expiry, bool check)
 {
     RTC_InitType RTC_Init_struct;
     int32_t delta;
 
-    RTC_Cmd(DISABLE);
+	/* In case the clock is still running */
+	if (check) {
+		RTC_Cmd(DISABLE);
+		while (SET == RTC->TCR_b.EN) {
+			/* Loop here till disabled */
+		}
+	}
+
     /* In case the delta timestamp is less 1 */
     delta = (int32_t)(expiry - bluenrg_timer_read() - 1);
     if (delta > 0) {
@@ -111,7 +120,7 @@ bluenrg_timer_handler(void)
     /* Any timers left on queue? If so, we need to set OCMP */
     timer = TAILQ_FIRST(&hal_timer_q);
     if (timer) {
-        bluenrg_timer_set(timer->expiry);
+        bluenrg_timer_set(timer->expiry, false);
     } else {
         bluenrg_timer_disable();
     }
@@ -294,7 +303,7 @@ hal_timer_start_at(struct hal_timer *timer, uint32_t tick)
 
     /* If this is the head, we need to set new OCMP */
     if (timer == TAILQ_FIRST(&hal_timer_q)) {
-        bluenrg_timer_set(timer->expiry);
+        bluenrg_timer_set(timer->expiry, true);
     }
 
     __HAL_ENABLE_INTERRUPTS(ctx);
@@ -315,7 +324,7 @@ int
 hal_timer_stop(struct hal_timer *timer)
 {
     uint32_t ctx;
-    int reset_ocmp;
+    bool reset_ocmp;
     struct hal_timer *entry;
 
     if (timer == NULL) {
@@ -325,17 +334,17 @@ hal_timer_stop(struct hal_timer *timer)
     __HAL_DISABLE_INTERRUPTS(ctx);
     
     if (timer->link.tqe_prev != NULL) {
-        reset_ocmp = 0;
+        reset_ocmp = false;
         if (timer == TAILQ_FIRST(&hal_timer_q)) {
             /* If first on queue, we will need to reset OCMP */
             entry = TAILQ_NEXT(timer, link);
-            reset_ocmp = 1;
+            reset_ocmp = true;
         }
         TAILQ_REMOVE(&hal_timer_q, timer, link);
         timer->link.tqe_prev = NULL;
         if (reset_ocmp) {
             if (entry) {
-                bluenrg_timer_set(entry->expiry);
+                bluenrg_timer_set(entry->expiry, false);
             } else {
                 bluenrg_timer_disable();
             }
