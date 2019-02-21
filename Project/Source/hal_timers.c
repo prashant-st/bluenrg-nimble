@@ -70,7 +70,7 @@ bluenrg_timer_set(uint32_t expiry, bool check)
     int32_t delta;
 
 	/* In case the clock is still running */
-	if (check) {
+	if (check && (SET == RTC->TCR_b.EN)) {
 		RTC_Cmd(DISABLE);
 		while (SET == RTC->TCR_b.EN) {
 			/* Loop here till disabled */
@@ -78,7 +78,7 @@ bluenrg_timer_set(uint32_t expiry, bool check)
 	}
 
     /* In case the delta timestamp is less 1 */
-    delta = (int32_t)(expiry - bluenrg_timer_read() - 1);
+    delta = (int32_t)(expiry - 1 - bluenrg_timer_read());
     if (delta > 0) {
         /** RTC configuration */
         RTC_StructInit(&RTC_Init_struct);
