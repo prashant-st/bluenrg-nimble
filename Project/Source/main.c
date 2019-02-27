@@ -294,8 +294,7 @@ struct hal_timer led_timer;
 
 void led_timer_cb(void *arg)
 {
-    SdkEvalLedToggle(LED1);
-    os_cputime_timer_relative(&led_timer, 100000);
+    SdkEvalLedOn(LED3);
 }
 
 /**@brief Thread for handling the Application's BLE Stack events.
@@ -317,6 +316,7 @@ static void ble_host_thread(void * arg)
   hal_timer_init(5, NULL);
   os_cputime_init(32768);
 
+  SdkEvalLedOff(LED3);
   os_cputime_timer_init(&led_timer, led_timer_cb, NULL);
   os_cputime_timer_relative(&led_timer, 100000);
 
