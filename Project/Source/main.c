@@ -230,6 +230,7 @@ NOTEs:
 #include "semphr.h"
 
 #include "nimble/nimble_port.h"
+#include "os/os_cputime.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -299,22 +300,19 @@ int main(void)
 static void ble_host_thread(void * arg)
 {
   uint8_t device_id, major_cut, minor_cut;
-  BaseType_t err;
+  //BaseType_t err;
 
   console_printf("\n");
   BLEPLAT_get_part_info(&device_id, &major_cut, &minor_cut);
   console_printf("BlueNRG-%d r%dp%d\n", device_id, major_cut, minor_cut);
 
-  /* Initialize NimBLE host */
-  nimble_port_init();
+  hal_timer_init(5, NULL);
+  os_cputime_init(32768);
 
-  err = xTaskCreate(nimble_port_ll_task_func, "controller",
-                    APP_TASK_BLE_CTRL_SIZE, NULL,
-                    APP_TASK_BLE_CTRL_PRIORITY, NULL);
-  assert_param(pdPASS == err);
-
-  /* Handle NimBLE events */
-  nimble_port_run();
+  while (1) {
+    os_cputime_delay_ticks(10000);
+    SdkEvalLedToggle(LED1);
+  }
 }
 
 /***************************************************************************************/
