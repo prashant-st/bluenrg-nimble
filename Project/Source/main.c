@@ -338,7 +338,7 @@ void assert_failed(uint8_t* file, uint32_t line)
   while (1)
   {
     SdkEvalLedToggle(LED2);
-    uint32_t delay = 500000;
+    volatile uint32_t delay = 500000;
     while (delay --)
     {
       __asm("nop");

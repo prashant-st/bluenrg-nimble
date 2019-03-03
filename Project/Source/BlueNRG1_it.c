@@ -25,6 +25,7 @@
 
 #include "BlueNRG1_it.h"
 #include "BlueNRG1_conf.h"
+#include "SDK_EVAL_Led.h"
 
 /** @addtogroup BlueNRG1_StdPeriph_Examples
   * @{
@@ -78,17 +79,17 @@ void HardFault_Handler(void)
 * @param  None
 * @retval None
 */
-void WDG_Handler(void)
-{
-  WDG_ClearITPendingBit();
-}
-    
 void RTC_Handler(void)
 {
   void bluenrg_timer_handler(void);
 
-  RTC_IT_Clear(RTC_IT_TIMER);
-  bluenrg_timer_handler();
+  if (RTC_IT_Status(RTC_IT_CLOCKWATCH)) {
+    RTC_IT_Clear(RTC_IT_CLOCKWATCH);
+    bluenrg_timer_handler();
+  } else if (RTC_IT_Status(RTC_IT_TIMER)) {
+    RTC_IT_Clear(RTC_IT_TIMER);
+    SdkEvalLedToggle(LED1);
+  }
 }
 
 void Blue_Handler(void)

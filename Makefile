@@ -53,6 +53,7 @@ BSP/Source/SDK_EVAL_Config.c \
 BSP/Source/SDK_EVAL_Button.c \
 BSP/Source/SDK_EVAL_Led.c \
 HAL/Source/miscutil.c \
+Driver/Source/misc.c \
 Driver/Source/BlueNRG1_sysCtrl.c \
 Driver/Source/BlueNRG1_gpio.c \
 Driver/Source/BlueNRG1_rtc.c \

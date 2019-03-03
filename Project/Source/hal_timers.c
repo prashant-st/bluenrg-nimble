@@ -29,6 +29,9 @@
 #include "BlueNRG1_conf.h"
 #include "SDK_EVAL_Config.h"
 
+/* 500 ms period setting */
+#define RTC_PERIOD_500ms                               ((32768-1)/2)
+
 #define __HAL_DISABLE_INTERRUPTS(x)                     \
     do {                                                \
         x = __get_PRIMASK();                            \
@@ -46,12 +49,12 @@ TAILQ_HEAD(hal_timer_qhead, hal_timer);
 
 static struct hal_timer_qhead hal_timer_q = TAILQ_HEAD_INITIALIZER(hal_timer_q);
 
-inline uint32_t
-bluenrg_timer_read(void)
+inline void
+bluenrg_timer_match(uint32_t expiry)
 {
-    uint32_t tcntr = ~0;
+    RTC_DateTimeType RTC_DateTime;
 
-    return tcntr - WDG_GetCounter();
+    RTC_SetMatchTimeDate(&RTC_DateTime);
 }
 
 /**
@@ -64,37 +67,24 @@ bluenrg_timer_read(void)
  * @param timer Pointer to timer.
  */
 static void
-bluenrg_timer_set(uint32_t expiry, bool check)
+bluenrg_timer_set(uint32_t expiry)
 {
-    RTC_InitType RTC_Init_struct;
     int32_t delta;
 
-	/* In case the clock is still running */
-	if (check && (SET == RTC->TCR_b.EN)) {
-		RTC_Cmd(DISABLE);
-		while (SET == RTC->TCR_b.EN) {
-			/* Loop here till disabled */
-		}
-	}
-
     /* In case the delta timestamp is less 1 */
-    delta = (int32_t)(expiry - 1 - bluenrg_timer_read());
+    delta = (int32_t)(expiry - 1 - hal_timer_read(0));
     if (delta > 0) {
-        /** RTC configuration */
-        RTC_StructInit(&RTC_Init_struct);
-        RTC_Init_struct.RTC_operatingMode = RTC_TIMER_ONESHOT;
-        RTC_Init_struct.RTC_TLR1 = delta;
-        RTC_Init(&RTC_Init_struct);
+        bluenrg_timer_match(expiry);
     } else {
         NVIC_SetPendingIRQ(RTC_IRQn);
     }
 }
 
 /* Disable output compare used for timer */
-inline void
+static void
 bluenrg_timer_disable(void)
 {
-    RTC_Cmd(DISABLE);
+    bluenrg_timer_match(hal_timer_read(0) + (1UL << 31));
 }
 
 void
@@ -108,7 +98,7 @@ bluenrg_timer_handler(void)
 
     while ((timer = TAILQ_FIRST(&hal_timer_q)) != NULL) {
         /* In case the current stamp is less 1 */
-        if ((int32_t)(bluenrg_timer_read() + 1 - timer->expiry) >= 0) {
+        if ((int32_t)(hal_timer_read(0) + 1 - timer->expiry) >= 0) {
             TAILQ_REMOVE(&hal_timer_q, timer, link);
             timer->link.tqe_prev = NULL;
             timer->cb_func(timer->cb_arg);
@@ -120,7 +110,7 @@ bluenrg_timer_handler(void)
     /* Any timers left on queue? If so, we need to set OCMP */
     timer = TAILQ_FIRST(&hal_timer_q);
     if (timer) {
-        bluenrg_timer_set(timer->expiry, false);
+        bluenrg_timer_set(timer->expiry);
     } else {
         bluenrg_timer_disable();
     }
@@ -141,14 +131,38 @@ bluenrg_timer_handler(void)
 int
 hal_timer_init(int timer_num, void *cfg)
 {
-    /* Enable watchdog clocks  */
-    SysCtrl_PeripheralClockCmd(CLOCK_PERIPH_WDG, ENABLE);
+    RTC_InitType RTC_Init_struct;
+    NVIC_InitType NVIC_InitStructure;
 
-    /* Set watchdog reload period */
-    WDG_SetReload(~0);
+    /* Enable RTC clocks */
+    SysCtrl_PeripheralClockCmd(CLOCK_PERIPH_RTC, ENABLE);
 
-    /* Watchdog enable */
-    WDG_Enable();
+    RTC_Init_struct.RTC_operatingMode = RTC_TIMER_PERIODIC;    /**< Periodic RTC mode */
+    RTC_Init_struct.RTC_PATTERN_SIZE = 1 - 1;                  /**< Pattern size set to 1 */
+    RTC_Init_struct.RTC_TLR1 = RTC_PERIOD_500ms;               /**< Enable 0.5s timer period */
+    RTC_Init_struct.RTC_PATTERN1 = 0x00;                       /**< RTC_TLR1 selected for time generation */
+    RTC_Init(&RTC_Init_struct);
+
+    /* Enable RTC Timer interrupt*/
+    RTC_IT_Config(RTC_IT_TIMER, ENABLE);
+    RTC_IT_Clear(RTC_IT_TIMER);
+
+    /** Delay between two write in RTC0->TCR register has to be
+      * at least 3 x 32k cycle + 2 CPU cycle. For that reason it
+      * is neccessary to add the delay. 
+      */
+    for (volatile uint16_t i=0; i<600; i++) {
+        __asm("NOP");
+    }
+
+    /* Set the RTC_IRQn interrupt priority and enable it */
+    NVIC_InitStructure.NVIC_IRQChannel = RTC_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = MED_PRIORITY;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+    /* Enable RTC */
+    RTC_Cmd(ENABLE);
 
     return 0;
 }
@@ -166,9 +180,31 @@ hal_timer_init(int timer_num, void *cfg)
 int
 hal_timer_config(int timer_num, uint32_t freq_hz)
 {
-    SysCtrl_PeripheralClockCmd(CLOCK_PERIPH_RTC, ENABLE);
-    RTC_IT_Config(RTC_IT_TIMER, ENABLE);
-    RTC_AutoStart(ENABLE);
+    RTC_DateTimeType RTC_DateTime;
+
+    /* Set the present time and date */
+    RTC_DateTime.Second = 0;
+    RTC_DateTime.Minute = 0;
+    RTC_DateTime.Hour = 0;
+    RTC_DateTime.WeekDay = 0;
+    RTC_DateTime.MonthDay = 1;
+    RTC_DateTime.Month = 1;
+    RTC_DateTime.Year = 0;
+    RTC_SetTimeDate(&RTC_DateTime);
+
+    /* Enable RTC clock watch interrupt */
+    RTC_IT_Config(RTC_IT_CLOCKWATCH, ENABLE);
+    RTC_IT_Clear(RTC_IT_CLOCKWATCH);
+
+    /* CLK1HZ clock is similar to CLK32K */
+    RTC->CTCR_b.CKDIV = 0;
+    /* It is neccessary to add the delay */
+    for (volatile uint16_t i=0; i<600; i++) {
+        __asm("NOP");
+    }
+
+    /* Enable RTC clockwatch */
+    RTC_ClockwatchCmd(ENABLE);
 
     return 0;
 }
@@ -185,7 +221,6 @@ hal_timer_config(int timer_num, uint32_t freq_hz)
 int
 hal_timer_deinit(int timer_num)
 {
-    SysCtrl_PeripheralClockCmd(CLOCK_PERIPH_WDG, DISABLE);
     SysCtrl_PeripheralClockCmd(CLOCK_PERIPH_RTC, DISABLE);
 
     return 0;
@@ -218,7 +253,11 @@ hal_timer_get_resolution(int timer_num)
 uint32_t
 hal_timer_read(int timer_num)
 {
-    return bluenrg_timer_read();
+    RTC_DateTimeType RTC_DateTime;
+
+    RTC_GetTimeDate(&RTC_DateTime);
+
+    return 0;
 }
 
 /**
@@ -268,7 +307,7 @@ hal_timer_set_cb(int timer_num, struct hal_timer *timer, hal_timer_cb cb_func,
 int
 hal_timer_start(struct hal_timer *timer, uint32_t ticks)
 {
-    return hal_timer_start_at(timer, bluenrg_timer_read() + ticks);
+    return hal_timer_start_at(timer, hal_timer_read(0) + ticks);
 }
 
 int
@@ -303,7 +342,7 @@ hal_timer_start_at(struct hal_timer *timer, uint32_t tick)
 
     /* If this is the head, we need to set new OCMP */
     if (timer == TAILQ_FIRST(&hal_timer_q)) {
-        bluenrg_timer_set(timer->expiry, true);
+        bluenrg_timer_set(timer->expiry);
     }
 
     __HAL_ENABLE_INTERRUPTS(ctx);
@@ -344,7 +383,7 @@ hal_timer_stop(struct hal_timer *timer)
         timer->link.tqe_prev = NULL;
         if (reset_ocmp) {
             if (entry) {
-                bluenrg_timer_set(entry->expiry, false);
+                bluenrg_timer_set(entry->expiry);
             } else {
                 bluenrg_timer_disable();
             }
