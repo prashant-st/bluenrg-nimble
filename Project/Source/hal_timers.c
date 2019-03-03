@@ -186,10 +186,10 @@ hal_timer_config(int timer_num, uint32_t freq_hz)
     RTC_DateTime.Second = 0;
     RTC_DateTime.Minute = 0;
     RTC_DateTime.Hour = 0;
-    RTC_DateTime.WeekDay = 0;
+    RTC_DateTime.WeekDay = 1;
     RTC_DateTime.MonthDay = 1;
     RTC_DateTime.Month = 1;
-    RTC_DateTime.Year = 0;
+    RTC_DateTime.Year = 1;
     RTC_SetTimeDate(&RTC_DateTime);
 
     /* Enable RTC clock watch interrupt */
