@@ -10,6 +10,7 @@
         "system_bluenrg2.h": "c",
         "bluenrg1_flash.h": "c",
         "nimble_npl.h": "c",
-        "nimble_npl_os.h": "c"
+        "nimble_npl_os.h": "c",
+        "time.h": "c"
     }
 }

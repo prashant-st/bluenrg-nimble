@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include "hal/hal_timer.h"
 
@@ -49,12 +50,37 @@ TAILQ_HEAD(hal_timer_qhead, hal_timer);
 
 static struct hal_timer_qhead hal_timer_q = TAILQ_HEAD_INITIALIZER(hal_timer_q);
 
-inline void
+static void
 bluenrg_timer_match(uint32_t expiry)
 {
-    RTC_DateTimeType RTC_DateTime;
+    RTC_DateTimeType RTC_DateTime = {0};
 
     RTC_SetMatchTimeDate(&RTC_DateTime);
+
+    /* Enable RTC clock watch interrupt */
+    RTC_IT_Config(RTC_IT_CLOCKWATCH, ENABLE);
+    RTC_IT_Clear(RTC_IT_CLOCKWATCH);
+}
+
+static uint32_t
+bluenrg_timer_now(void)
+{
+    RTC_DateTimeType RTC_DateTime = {0};
+
+    RTC_GetTimeDate(&RTC_DateTime);
+
+    return 0;
+}
+
+static bool
+bluenrg_timer_check(uint32_t expiry)
+{
+    int32_t delta;
+
+    /* Make sure the clock match happen */
+    delta = (int32_t)(bluenrg_timer_now() + 1 - expiry);
+
+    return (delta >= 0);
 }
 
 /**
@@ -69,14 +95,10 @@ bluenrg_timer_match(uint32_t expiry)
 static void
 bluenrg_timer_set(uint32_t expiry)
 {
-    int32_t delta;
-
-    /* In case the delta timestamp is less 1 */
-    delta = (int32_t)(expiry - 1 - hal_timer_read(0));
-    if (delta > 0) {
-        bluenrg_timer_match(expiry);
-    } else {
+    if (bluenrg_timer_check(expiry)) {
         NVIC_SetPendingIRQ(RTC_IRQn);
+    } else {
+        bluenrg_timer_match(expiry);
     }
 }
 
@@ -84,7 +106,9 @@ bluenrg_timer_set(uint32_t expiry)
 static void
 bluenrg_timer_disable(void)
 {
-    bluenrg_timer_match(hal_timer_read(0) + (1UL << 31));
+    /* Disable RTC clock watch interrupt */
+    RTC_IT_Config(RTC_IT_CLOCKWATCH, DISABLE);
+    RTC_IT_Clear(RTC_IT_CLOCKWATCH);
 }
 
 void
@@ -98,7 +122,7 @@ bluenrg_timer_handler(void)
 
     while ((timer = TAILQ_FIRST(&hal_timer_q)) != NULL) {
         /* In case the current stamp is less 1 */
-        if ((int32_t)(hal_timer_read(0) + 1 - timer->expiry) >= 0) {
+        if (bluenrg_timer_check(timer->expiry)) {
             TAILQ_REMOVE(&hal_timer_q, timer, link);
             timer->link.tqe_prev = NULL;
             timer->cb_func(timer->cb_arg);
@@ -186,15 +210,11 @@ hal_timer_config(int timer_num, uint32_t freq_hz)
     RTC_DateTime.Second = 0;
     RTC_DateTime.Minute = 0;
     RTC_DateTime.Hour = 0;
-    RTC_DateTime.WeekDay = 1;
+    RTC_DateTime.WeekDay = 4;
     RTC_DateTime.MonthDay = 1;
     RTC_DateTime.Month = 1;
-    RTC_DateTime.Year = 1;
+    RTC_DateTime.Year = 1970;
     RTC_SetTimeDate(&RTC_DateTime);
-
-    /* Enable RTC clock watch interrupt */
-    RTC_IT_Config(RTC_IT_CLOCKWATCH, ENABLE);
-    RTC_IT_Clear(RTC_IT_CLOCKWATCH);
 
     /* CLK1HZ clock is similar to CLK32K */
     RTC->CTCR_b.CKDIV = 0;
@@ -253,11 +273,11 @@ hal_timer_get_resolution(int timer_num)
 uint32_t
 hal_timer_read(int timer_num)
 {
-    RTC_DateTimeType RTC_DateTime;
+    uint32_t tcntr;
 
-    RTC_GetTimeDate(&RTC_DateTime);
+    tcntr = bluenrg_timer_now();
 
-    return 0;
+    return tcntr;
 }
 
 /**
@@ -307,7 +327,7 @@ hal_timer_set_cb(int timer_num, struct hal_timer *timer, hal_timer_cb cb_func,
 int
 hal_timer_start(struct hal_timer *timer, uint32_t ticks)
 {
-    return hal_timer_start_at(timer, hal_timer_read(0) + ticks);
+    return hal_timer_start_at(timer, bluenrg_timer_now() + ticks);
 }
 
 int

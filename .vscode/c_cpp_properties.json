@@ -30,10 +30,10 @@
                 "HS_SPEED_XTAL=HS_SPEED_XTAL_32MHZ",
                 "NIMBLE_CFG_CONTROLLER=1"
             ],
-            "compilerPath": "/usr/bin/clang",
+            "compilerPath": "/usr/bin/arm-none-eabi-gcc",
             "cStandard": "c11",
             "cppStandard": "c++14",
-            "intelliSenseMode": "clang-x64"
+            "intelliSenseMode": "${default}"
         }
     ],
     "version": 4
